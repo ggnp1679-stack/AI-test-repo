@@ -28,9 +28,6 @@ def main():
         end_date=cfg["data"]["end_date"],
     )
 
-    if cfg["strategy"]["name"] != "sma_cross":
-        raise ValueError("v1 supports only strategy.name = sma_cross")
-
     df_sig = generate_signals_sma_cross(
         df,
         short_window=cfg["strategy"]["short_window"],
