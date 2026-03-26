@@ -1,0 +1,30 @@
+data:
+  symbol: "SPY"
+  start_date: "2005-01-01"
+  end_date: "2025-12-31"
+  source: "yfinance"
+
+strategy:
+  name: "sma_cross"
+  short_window: 50
+  long_window: 200
+
+execution:
+  price: "next_open"   # next_open | close
+  rebalance_frequency: "daily"
+
+costs:
+  commission_bps: 5
+  slippage_bps: 5
+
+portfolio:
+  initial_capital: 100000
+  long_only: true
+  position_size: 1.0
+
+report:
+  output_dir: "results"
+  save_equity_curve_csv: true
+  save_trades_csv: true
+  save_summary_json: true
+  benchmark: "buy_and_hold"

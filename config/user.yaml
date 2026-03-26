@@ -1,0 +1,12 @@
+data:
+  symbol: "SPY"
+  start_date: "2010-01-01"
+  end_date: "2025-12-31"
+
+strategy:
+  short_window: 20
+  long_window: 100
+
+costs:
+  commission_bps: 3
+  slippage_bps: 2
