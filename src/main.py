@@ -35,7 +35,7 @@ def main():
     )
 
     result_df, trades_df = run_backtest(df_sig, cfg)
-    summary = compute_metrics(result_df)
+    summary = compute_metrics(result_df, trades_df)
 
     out_dir = cfg["report"]["output_dir"]
     ensure_dir(out_dir)

@@ -47,18 +47,45 @@ def run_backtest(df: pd.DataFrame, cfg: dict) -> tuple[pd.DataFrame, pd.DataFram
     out["execution_ret"] = out["trade"] * (exec_move.fillna(1.0) - 1.0)
     out["strategy_gross_ret"] = out["holding_ret"] + out["execution_ret"]
 
+    out["position_change"] = out["position"].diff().fillna(out["position"])
+    out["trade_size"] = out["position_change"].abs()
+
     total_bps = commission_bps + slippage_bps
-    cost_price_ratio = (out["exec_px"] / out["mtm_px"]).replace([pd.NA, float("inf"), -float("inf")], 1.0)
-    out["cost_ret"] = out["trade_size"] * cost_price_ratio.fillna(1.0) * (total_bps / 10000.0)
+    out["trade_cost_rate"] = out["trade_size"] * (total_bps / 10000.0)
+    out["cost_ret"] = out["trade_cost_rate"]
 
     out["strategy_net_ret"] = out["strategy_gross_ret"] - out["cost_ret"]
 
     out["equity"] = initial_capital * (1.0 + out["strategy_net_ret"]).cumprod()
     out["benchmark_equity"] = initial_capital * (1.0 + out["ret"]).cumprod()
 
-    trades = out.loc[
-        out["trade_size"] > 0,
-        ["signal_date", "Date", "trade", "position", "exec_px", "mtm_px", "execution_ret", "cost_ret"],
-    ].copy()
-    trades = trades.rename(columns={"Date": "execution_date"})
+    trades = out.loc[out["trade_size"] > 0, [
+        "Date",
+        "exec_px",
+        "position",
+        "position_change",
+        "trade_size",
+        "trade_cost_rate",
+        "cost_ret",
+    ]].copy()
+    trades = trades.rename(columns={"exec_px": "fill_price"})
+    trades["trade_index"] = trades.index
+    trades["trade_direction"] = trades["position_change"].apply(lambda x: "BUY" if x > 0 else "SELL")
+    trades["position_before"] = trades["position"] - trades["position_change"]
+    trades["position_after"] = trades["position"]
+    trades = trades[
+        [
+            "trade_index",
+            "Date",
+            "trade_direction",
+            "fill_price",
+            "position_before",
+            "position_after",
+            "position_change",
+            "trade_size",
+            "trade_cost_rate",
+            "cost_ret",
+        ]
+    ]
+
     return out, trades
